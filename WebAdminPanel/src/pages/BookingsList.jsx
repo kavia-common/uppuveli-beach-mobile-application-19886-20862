@@ -2,6 +2,10 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { listBookings, deleteBooking } from '../services/bookings';
 import { handleAuthRedirectIfPresent } from '../auth/oauth';
+// Upcoming integrations (placeholders):
+// import { processPayment } from '../services/payments';
+// import { sendNotification } from '../services/notifications';
+// import { sendChatMessage } from '../services/chat';
 
 /**
  * PUBLIC_INTERFACE
@@ -77,8 +81,33 @@ export default function BookingsList() {
         <td>{b.checkOut || b.check_out || '-'}</td>
         <td>{b.status || '-'}</td>
         <td>
-          {/* For now, only delete action; edit can be added later */}
-          <button onClick={() => onDelete(b.id)} style={actionBtnDanger}>Delete</button>
+          {/* Upcoming features: payments, notifications, chat */}
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <button
+              disabled
+              title="Payments coming soon"
+              style={{ ...chipBtn, backgroundColor: '#adb5bd', cursor: 'not-allowed' }}
+            >
+              💳 Pay
+            </button>
+            <button
+              disabled
+              title="Send notification (coming soon)"
+              style={{ ...chipBtn, backgroundColor: '#6c757d', cursor: 'not-allowed' }}
+            >
+              🔔 Notify
+            </button>
+            <button
+              disabled
+              title="Open chat (coming soon)"
+              style={{ ...chipBtn, backgroundColor: '#20c997', cursor: 'not-allowed' }}
+            >
+              💬 Chat
+            </button>
+            <button onClick={() => onDelete(b.id)} style={actionBtnDanger} title="Delete booking">
+              Delete
+            </button>
+          </div>
         </td>
       </tr>
     ));
@@ -94,6 +123,13 @@ export default function BookingsList() {
           </button>
           <button onClick={() => navigate('/bookings/new')} style={primaryBtn}>
             + New Booking
+          </button>
+          {/* Disabled upcoming global actions */}
+          <button disabled title="Bulk notify coming soon" style={{ ...secondaryBtn, opacity: 0.7 }}>
+            🔔 Notify All
+          </button>
+          <button disabled title="Open staff chat coming soon" style={{ ...secondaryBtn, opacity: 0.7 }}>
+            💬 Staff Chat
           </button>
         </div>
       </div>
@@ -127,6 +163,8 @@ export default function BookingsList() {
 
       <div style={{ marginTop: 16, fontSize: 12, color: '#6c757d' }}>
         Tip: Backend should support GET /bookings with Bearer auth. Check .env config if requests fail.
+        <br />
+        Note: Payments (💳), Notifications (🔔), and Chat (💬) actions are placeholders and will be enabled once backend endpoints are ready.
       </div>
       <div style={{ marginTop: 8 }}>
         <Link to="/">Back to Home</Link>
@@ -140,6 +178,7 @@ const headerRow = { display: 'flex', alignItems: 'center', justifyContent: 'spac
 const primaryBtn = { backgroundColor: '#0d6efd', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 12px', marginLeft: 8, cursor: 'pointer' };
 const secondaryBtn = { backgroundColor: '#6c757d', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 12px', marginLeft: 8, cursor: 'pointer' };
 const actionBtnDanger = { backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' };
+const chipBtn = { color: '#fff', border: 'none', borderRadius: 16, padding: '6px 10px', cursor: 'default', fontSize: 12 };
 const table = { width: '100%', borderCollapse: 'collapse' };
 const errorBox = { backgroundColor: '#fdecea', color: '#b71c1c', border: '1px solid #f5c2c7', padding: 12, borderRadius: 6, marginBottom: 12 };
 

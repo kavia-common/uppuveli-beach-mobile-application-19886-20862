@@ -23,6 +23,19 @@ cp .env.example .env
 - `REACT_APP_OAUTH_SCOPES` — Space-separated list of requested scopes.
   - Default: `admin`
 
+Planned endpoints used by new service placeholders (ensure your backend exposes these under `REACT_APP_API_BASE`):
+- Payments: 
+  - POST `/payments` (process payment)
+  - GET  `/payments/{id}` (retrieve payment)
+  - POST `/payments/{id}/refund` (refund)
+- Notifications:
+  - POST `/notifications` (send notification)
+  - GET  `/notifications` (list)
+  - POST `/notifications/test` (optional test)
+- Chat:
+  - POST `/chat` (send message)
+  - GET  `/chat` (list messages)
+
 Note:
 - In Create React App, environment variables must be defined at build time and start with `REACT_APP_` to be available in the browser.
 - Do not place secrets in these variables—they are exposed to the client.
