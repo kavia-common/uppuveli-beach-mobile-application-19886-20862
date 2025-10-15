@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import LoginButton from './components/LoginButton.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import BookingsList from './pages/BookingsList.jsx';

@@ -67,7 +67,7 @@ export default function LoginButton() {
     if (!t) return '';
     // Show a short preview for demo only
     return `${t.slice(0, 8)}...${t.slice(-4)}`;
-  }, [auth, busy]);
+  }, []);
 
   if (busy) {
     return (
