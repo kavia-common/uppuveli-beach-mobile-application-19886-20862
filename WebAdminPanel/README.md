@@ -1,82 +1,86 @@
-# Lightweight React Template for KAVIA
+# Uppuveli Beach Web Admin Panel
 
-This project provides a minimal React template with a clean, modern UI and minimal dependencies.
+This is the React-based Web Admin Panel for hotel staff. It uses Create React App and reads configuration from environment variables (prefixed with `REACT_APP_`).
 
-## Features
+## Environment Configuration
 
-- **Lightweight**: No heavy UI frameworks - uses only vanilla CSS and React
-- **Modern UI**: Clean, responsive design with KAVIA brand styling
-- **Fast**: Minimal dependencies for quick loading times
-- **Simple**: Easy to understand and modify
-
-## Getting Started
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-### `npm test`
-
-Launches the test runner in interactive watch mode.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-## Customization
-
-### Colors
-
-The main brand colors are defined as CSS variables in `src/App.css`:
-
-```css
-:root {
-  --kavia-orange: #E87A41;
-  --kavia-dark: #1A1A1A;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
-}
+1) Copy the example environment file and customize values as needed:
+```bash
+cp .env.example .env
 ```
 
-### Components
+2) Variables available:
+- `REACT_APP_API_BASE` — Base URL of the Backend API.
+  - Default: `http://localhost:3001/api/v1`
+- `REACT_APP_OAUTH_AUTH_URL` — OAuth2 Authorization endpoint (Authorization Code flow).
+  - Default: `http://localhost:3001/oauth/authorize`
+- `REACT_APP_OAUTH_TOKEN_URL` — OAuth2 Token endpoint.
+  - Default: `http://localhost:3001/oauth/token`
+- `REACT_APP_OAUTH_CLIENT_ID` — OAuth2 client ID registered on the backend for the Web Admin Panel.
+  - Default: `admin-web`
+- `REACT_APP_OAUTH_REDIRECT_URI` — The redirect URI for OAuth2 callbacks. Must be registered in the backend OAuth client configuration.
+  - Default: `http://localhost:3000`
+- `REACT_APP_OAUTH_SCOPES` — Space-separated list of requested scopes.
+  - Default: `admin`
 
-This template uses pure HTML/CSS components instead of a UI framework. You can find component styles in `src/App.css`. 
+Note:
+- In Create React App, environment variables must be defined at build time and start with `REACT_APP_` to be available in the browser.
+- Do not place secrets in these variables—they are exposed to the client.
 
-Common components include:
-- Buttons (`.btn`, `.btn-large`)
-- Container (`.container`)
-- Navigation (`.navbar`)
-- Typography (`.title`, `.subtitle`, `.description`)
+## Running the App
 
-## Learn More
+Install dependencies and start the development server:
+```bash
+npm install
+npm start
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+The app runs at:
+- UI: http://localhost:3000
 
-### Code Splitting
+Ensure your backend (or mock) is running and accessible at the URLs specified in `.env`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## How OAuth Mock Works (Local Dev)
 
-### Analyzing the Bundle Size
+For local development, defaults point to:
+- Authorization URL: `http://localhost:3001/oauth/authorize`
+- Token URL: `http://localhost:3001/oauth/token`
+- Client ID: `admin-web`
+- Redirect URI: `http://localhost:3000`
+- Scopes: `admin`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+You can:
+- Use a simple mock backend that accepts any username/password and returns a static authorization code, then exchanges it for a static token at the token endpoint.
+- Or configure your real backend’s OAuth2 server to register:
+  - Client: `admin-web`
+  - Redirect URI: `http://localhost:3000`
+  - Scope: `admin`
 
-### Making a Progressive Web App
+The admin panel constructs the authorization URL using these settings. After login on the authorization server, it should redirect back to the redirect URI with a `code` parameter to exchange at the token endpoint.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## Configuration in Code
 
-### Advanced Configuration
+- `src/config.js` reads the environment variables and provides local defaults.
+- It also exposes helpers:
+  - `buildAuthorizationUrl(state?)` — Build the OAuth2 authorization URL.
+  - `isUsingLocalDefaults()` — Returns true if no env overrides are set.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Next Steps
 
-### Deployment
+- Wire `config.apiBase` into your API client.
+- Implement the OAuth flow using `buildAuthorizationUrl()` and handle the `code` exchange using `config.oauth.tokenUrl`.
+- Add protected routes and token storage strategy.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Troubleshooting
 
-### `npm run build` fails to minify
+- Changes to `.env` require restarting `npm start`.
+- Verify CORS is enabled on your backend for `http://localhost:3000`.
+- Make sure the OAuth client’s redirect URI matches exactly the value used by the app.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```text
+Important: Do not hardcode credentials or secrets in the frontend. Keep sensitive data on the backend.
+```
+
+Instructions for future agent:
+- Integrate the config into the app flow (API client, OAuth callback handling, protected routes).
+- Ensure the backend exposes the mock/real OAuth endpoints described above and supports the `admin-web` client for local dev.
