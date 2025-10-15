@@ -95,6 +95,14 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/bookings/:id"
+              element={
+                <ProtectedRoute>
+                  <BookingForm />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Fallback */}
             <Route path="*" element={<div style={{ padding: 24 }}>Not Found</div>} />

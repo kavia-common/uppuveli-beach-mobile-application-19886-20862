@@ -2,17 +2,13 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { listBookings, deleteBooking } from '../services/bookings';
 import { handleAuthRedirectIfPresent } from '../auth/oauth';
-// Upcoming integrations (placeholders):
-// import { processPayment } from '../services/payments';
-// import { sendNotification } from '../services/notifications';
-// import { sendChatMessage } from '../services/chat';
 
 /**
  * PUBLIC_INTERFACE
  * BookingsList renders a paginated list of bookings pulled from the backend API.
- * - Lists bookings
+ * - Lists bookings with Edit and Delete actions
  * - Allows navigation to create new booking
- * - Includes delete action (optimistic UI with fallback)
+ * - Placeholder actions for payments, notifications, and chat
  */
 export default function BookingsList() {
   const [items, setItems] = useState([]);
@@ -52,8 +48,15 @@ export default function BookingsList() {
     load();
   }, [load, refreshKey]);
 
+  const onEdit = useCallback((id) => {
+    if (!id) return;
+    navigate(`/bookings/${id}`);
+  }, [navigate]);
+
   const onDelete = useCallback(async (id) => {
     if (!id) return;
+    if (!window.confirm('Are you sure you want to delete this booking?')) return;
+    
     const prev = items;
     setItems(prev.filter((x) => x.id !== id));
     const { ok, error: err } = await deleteBooking(id);
@@ -67,7 +70,7 @@ export default function BookingsList() {
   const rows = useMemo(() => {
     if (!items?.length) return (
       <tr>
-        <td colSpan={6} style={{ textAlign: 'center', padding: 16, color: '#666' }}>
+        <td colSpan={7} style={{ textAlign: 'center', padding: 16, color: '#666' }}>
           No bookings found.
         </td>
       </tr>
@@ -75,34 +78,21 @@ export default function BookingsList() {
     return items.map((b) => (
       <tr key={b.id}>
         <td>{b.id}</td>
-        <td>{b.guestName || b.guest_id || b.guest || '-'}</td>
-        <td>{b.roomNumber || b.room_id || b.room || '-'}</td>
-        <td>{b.checkIn || b.check_in || '-'}</td>
-        <td>{b.checkOut || b.check_out || '-'}</td>
-        <td>{b.status || '-'}</td>
+        <td>{b.userId || '-'}</td>
+        <td>{b.roomId || '-'}</td>
+        <td>{b.checkIn || '-'}</td>
+        <td>{b.checkOut || '-'}</td>
         <td>
-          {/* Upcoming features: payments, notifications, chat */}
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <span style={getStatusBadge(b.status)}>{b.status || '-'}</span>
+        </td>
+        <td>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
             <button
-              disabled
-              title="Payments coming soon"
-              style={{ ...chipBtn, backgroundColor: '#adb5bd', cursor: 'not-allowed' }}
+              onClick={() => onEdit(b.id)}
+              style={actionBtnPrimary}
+              title="Edit booking"
             >
-              💳 Pay
-            </button>
-            <button
-              disabled
-              title="Send notification (coming soon)"
-              style={{ ...chipBtn, backgroundColor: '#6c757d', cursor: 'not-allowed' }}
-            >
-              🔔 Notify
-            </button>
-            <button
-              disabled
-              title="Open chat (coming soon)"
-              style={{ ...chipBtn, backgroundColor: '#20c997', cursor: 'not-allowed' }}
-            >
-              💬 Chat
+              Edit
             </button>
             <button onClick={() => onDelete(b.id)} style={actionBtnDanger} title="Delete booking">
               Delete
@@ -111,7 +101,7 @@ export default function BookingsList() {
         </td>
       </tr>
     ));
-  }, [items, onDelete]);
+  }, [items, onEdit, onDelete]);
 
   return (
     <div style={container}>
@@ -119,17 +109,10 @@ export default function BookingsList() {
         <h2 style={{ margin: 0 }}>Bookings</h2>
         <div>
           <button onClick={() => setRefreshKey((x) => x + 1)} style={secondaryBtn} disabled={busy}>
-            Refresh
+            {busy ? 'Loading...' : 'Refresh'}
           </button>
           <button onClick={() => navigate('/bookings/new')} style={primaryBtn}>
             + New Booking
-          </button>
-          {/* Disabled upcoming global actions */}
-          <button disabled title="Bulk notify coming soon" style={{ ...secondaryBtn, opacity: 0.7 }}>
-            🔔 Notify All
-          </button>
-          <button disabled title="Open staff chat coming soon" style={{ ...secondaryBtn, opacity: 0.7 }}>
-            💬 Staff Chat
           </button>
         </div>
       </div>
@@ -147,13 +130,13 @@ export default function BookingsList() {
           <table style={table}>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Guest</th>
-                <th>Room</th>
-                <th>Check-in</th>
-                <th>Check-out</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th style={thStyle}>ID</th>
+                <th style={thStyle}>User ID</th>
+                <th style={thStyle}>Room ID</th>
+                <th style={thStyle}>Check-in</th>
+                <th style={thStyle}>Check-out</th>
+                <th style={thStyle}>Status</th>
+                <th style={thStyle}>Actions</th>
               </tr>
             </thead>
             <tbody>{rows}</tbody>
@@ -162,9 +145,7 @@ export default function BookingsList() {
       )}
 
       <div style={{ marginTop: 16, fontSize: 12, color: '#6c757d' }}>
-        Tip: Backend should support GET /bookings with Bearer auth. Check .env config if requests fail.
-        <br />
-        Note: Payments (💳), Notifications (🔔), and Chat (💬) actions are placeholders and will be enabled once backend endpoints are ready.
+        Tip: Backend supports GET /api/v1/bookings with Bearer auth. Check .env config if requests fail.
       </div>
       <div style={{ marginTop: 8 }}>
         <Link to="/">Back to Home</Link>
@@ -173,12 +154,28 @@ export default function BookingsList() {
   );
 }
 
+function getStatusBadge(status) {
+  const base = { padding: '4px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600 };
+  switch (status) {
+    case 'booked':
+      return { ...base, backgroundColor: '#cfe2ff', color: '#084298' };
+    case 'checked_in':
+      return { ...base, backgroundColor: '#d1e7dd', color: '#0f5132' };
+    case 'checked_out':
+      return { ...base, backgroundColor: '#e2e3e5', color: '#41464b' };
+    case 'cancelled':
+      return { ...base, backgroundColor: '#f8d7da', color: '#842029' };
+    default:
+      return { ...base, backgroundColor: '#e9ecef', color: '#495057' };
+  }
+}
+
 const container = { padding: 24, maxWidth: 1100, margin: '0 auto' };
 const headerRow = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 };
 const primaryBtn = { backgroundColor: '#0d6efd', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 12px', marginLeft: 8, cursor: 'pointer' };
 const secondaryBtn = { backgroundColor: '#6c757d', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 12px', marginLeft: 8, cursor: 'pointer' };
-const actionBtnDanger = { backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' };
-const chipBtn = { color: '#fff', border: 'none', borderRadius: 16, padding: '6px 10px', cursor: 'default', fontSize: 12 };
-const table = { width: '100%', borderCollapse: 'collapse' };
+const actionBtnPrimary = { backgroundColor: '#0d6efd', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer', fontSize: 13 };
+const actionBtnDanger = { backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer', fontSize: 13 };
+const table = { width: '100%', borderCollapse: 'collapse', marginTop: 8 };
+const thStyle = { textAlign: 'left', padding: 12, borderBottom: '2px solid #dee2e6', fontWeight: 600, fontSize: 14 };
 const errorBox = { backgroundColor: '#fdecea', color: '#b71c1c', border: '1px solid #f5c2c7', padding: 12, borderRadius: 6, marginBottom: 12 };
-
