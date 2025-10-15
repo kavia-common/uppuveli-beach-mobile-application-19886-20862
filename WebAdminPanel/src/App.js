@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import LoginButton from './components/LoginButton.jsx';
 
 // PUBLIC_INTERFACE
 function App() {
@@ -33,11 +34,16 @@ function App() {
         <p>
           Current theme: <strong>{theme}</strong>
         </p>
+
+        {/* OAuth Login Area */}
+        <LoginButton />
+
         <a
           className="App-link"
           href="https://reactjs.org"
           target="_blank"
           rel="noopener noreferrer"
+          style={{ marginTop: 16 }}
         >
           Learn React
         </a>

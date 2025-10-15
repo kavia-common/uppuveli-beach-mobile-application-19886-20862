@@ -65,10 +65,27 @@ The admin panel constructs the authorization URL using these settings. After log
   - `buildAuthorizationUrl(state?)` — Build the OAuth2 authorization URL.
   - `isUsingLocalDefaults()` — Returns true if no env overrides are set.
 
+## OAuth Utilities (Placeholder Flow)
+
+Implemented in:
+- `src/auth/oauth.js`
+  - `getAccessToken()` / `setAccessToken(token)` — Manage token in `sessionStorage`
+  - `redirectToLogin(state?)` — Redirect to the authorization URL
+  - `handleAuthRedirectIfPresent()` — Parse `?code` and exchange via `REACT_APP_OAUTH_TOKEN_URL`
+  - `isAuthenticated()` and `logout()` — Basic auth state helpers
+- `src/components/LoginButton.jsx` — Simple UI to initiate login/logout and show status
+
+Notes:
+- Back-end mock endpoints expected:
+  - `GET/POST /oauth/authorize` (external)
+  - `POST /oauth/token` (exchange)
+  - `GET /admin/me` (optional, to display user)
+- If backend is not yet available, the UI will show graceful errors in console and a simple message.
+
 ## Next Steps
 
 - Wire `config.apiBase` into your API client.
-- Implement the OAuth flow using `buildAuthorizationUrl()` and handle the `code` exchange using `config.oauth.tokenUrl`.
+- Use `getAccessToken()` to attach `Authorization: Bearer <token>` header.
 - Add protected routes and token storage strategy.
 
 ## Troubleshooting
