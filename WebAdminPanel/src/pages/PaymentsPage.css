@@ -1,0 +1,17 @@
+.payments-page {
+  padding: 0;
+}
+
+.payments-page h1 {
+  margin: 0 0 2rem 0;
+  color: #1a1a2e;
+}
+
+.success-message {
+  background-color: #e8f5e9;
+  border: 1px solid #4caf50;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: #2e7d32;
+}

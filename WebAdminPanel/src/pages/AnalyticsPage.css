@@ -1,0 +1,23 @@
+.analytics-page {
+  padding: 0;
+}
+
+.analytics-page h1 {
+  margin: 0 0 2rem 0;
+  color: #1a1a2e;
+}
+
+.analytics-content {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.analytics-content pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+}
