@@ -2,18 +2,18 @@ import axios from 'axios';
 import cfg from '../../config/config';
 import * as authService from '../authService';
 
-// Mock axios
+// Ensure axios is mocked to avoid network calls
 jest.mock('axios');
 
 describe('authService', () => {
   const originalLocation = window.location;
 
   beforeEach(() => {
-    // jsdom provides window.location but not settable href directly; redefine for tests
     delete window.location;
     window.location = { href: 'http://localhost/' };
     sessionStorage.clear();
     localStorage.clear();
+    jest.resetAllMocks();
     jest.clearAllMocks();
   });
 
@@ -22,20 +22,17 @@ describe('authService', () => {
   });
 
   test('login builds correct authorization URL and redirects', () => {
-    // Provide deterministic config
     const baseAuthUrl = cfg.oauth.authorizationUrl;
     const prevCrypto = window.crypto;
-    // Mock crypto.getRandomValues to stable state value length
     window.crypto = {
       getRandomValues: (arr) => {
-        for (let i = 0; i < arr.length; i += 1) arr[i] = 1; // predictable "01" hex
+        for (let i = 0; i < arr.length; i += 1) arr[i] = 1;
         return arr;
       },
     };
 
     authService.login();
 
-    // Validate window.location.href set
     const url = new URL(window.location.href);
     expect(url.origin + url.pathname).toBe(new URL(baseAuthUrl).origin + new URL(baseAuthUrl).pathname);
 
@@ -44,7 +41,6 @@ describe('authService', () => {
     expect(params.get('client_id')).toBe(cfg.oauth.clientId);
     expect(params.get('redirect_uri')).toBe(cfg.oauth.redirectUri);
 
-    // scope should default to provided cfg scopes or "admin"
     const scope = params.get('scope');
     if (cfg.oauth.scopes && cfg.oauth.scopes.length) {
       expect(scope).toBe(cfg.oauth.scopes.join(' '));
@@ -56,7 +52,6 @@ describe('authService', () => {
     expect(state).toBeTruthy();
     expect(sessionStorage.getItem('oauth_state')).toBe(state);
 
-    // restore crypto
     window.crypto = prevCrypto;
   });
 

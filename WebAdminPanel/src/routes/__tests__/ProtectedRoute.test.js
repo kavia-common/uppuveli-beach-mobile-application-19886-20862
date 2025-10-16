@@ -1,79 +1,65 @@
 import React from 'react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+import { Routes, Route } from 'react-router-dom';
 import ProtectedRoute from '../ProtectedRoute';
-import { AuthProviderMock } from '../../context/__mocks__/AuthContextMock';
+import { render } from '../../test-utils';
 
-// Simple stubs for protected and login pages
 const ProtectedContent = () => <div>Protected Dashboard</div>;
 const LoginPage = () => <div>Login Page</div>;
 
-function renderWithRouter(ui, { route = '/dashboard', initialEntries } = {}) {
-  return render(
-    <MemoryRouter initialEntries={initialEntries || [route]}>
-      {ui}
-    </MemoryRouter>
-  );
-}
-
-describe('ProtectedRoute', () => {
+describe('ProtectedRoute (with custom test-utils)', () => {
   test('redirects unauthenticated users to /login', async () => {
-    renderWithRouter(
-      <AuthProviderMock
-        value={{
-          user: null,
-          accessToken: null,
-          isAuthenticated: false,
-          isLoading: false,
-          login: jest.fn(),
-          logout: jest.fn(),
-          setAuthData: jest.fn(),
-        }}
-      >
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <ProtectedContent />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </AuthProviderMock>,
-      { initialEntries: ['/dashboard'] }
+    const unauth = {
+      user: null,
+      accessToken: null,
+      isAuthenticated: false,
+      isLoading: false,
+      login: jest.fn(),
+      logout: jest.fn(),
+      setAuthData: jest.fn(),
+    };
+
+    render(
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <ProtectedContent />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>,
+      { authValue: unauth, initialEntries: ['/dashboard'] }
     );
 
-    // After navigation, we should see login page content
     expect(screen.getByText('Login Page')).toBeInTheDocument();
   });
 
   test('renders children when authenticated', async () => {
-    renderWithRouter(
-      <AuthProviderMock
-        value={{
-          user: { id: 'u1' },
-          accessToken: 'token',
-          isAuthenticated: true,
-          isLoading: false,
-          login: jest.fn(),
-          logout: jest.fn(),
-          setAuthData: jest.fn(),
-        }}
-      >
-        <Routes>
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <ProtectedContent />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </AuthProviderMock>,
-      { initialEntries: ['/dashboard'] }
+    const authed = {
+      user: { id: 'u1' },
+      accessToken: 'token',
+      isAuthenticated: true,
+      isLoading: false,
+      login: jest.fn(),
+      logout: jest.fn(),
+      setAuthData: jest.fn(),
+    };
+
+    render(
+      <Routes>
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <ProtectedContent />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>,
+      { authValue: authed, initialEntries: ['/dashboard'] }
     );
 
     expect(screen.getByText('Protected Dashboard')).toBeInTheDocument();
