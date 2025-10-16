@@ -1,6 +1,9 @@
 /* Global Jest setup for CRA + RTL */
 import '@testing-library/jest-dom';
 
+// Mock axios globally to avoid importing ESM build under react-scripts/Jest
+jest.mock('axios');
+
 // Silence expected network/console noise during tests to keep output clean
 const originalError = console.error;
 const originalWarn = console.warn;
@@ -9,14 +12,21 @@ const originalWarn = console.warn;
 beforeAll(() => {
   console.error = (...args) => {
     const msg = args?.[0] || '';
-    if (typeof msg === 'string' && (msg.includes('Warning: An update to') || msg.includes('React state update on an unmounted component'))) {
+    if (
+      typeof msg === 'string' &&
+      (msg.includes('Warning: An update to') ||
+        msg.includes('React state update on an unmounted component'))
+    ) {
       return;
     }
     originalError(...args);
   };
   console.warn = (...args) => {
     const msg = args?.[0] || '';
-    if (typeof msg === 'string' && msg.includes('You should not use <Route> outside a <Router>')) {
+    if (
+      typeof msg === 'string' &&
+      msg.includes('You should not use <Route> outside a <Router>')
+    ) {
       return;
     }
     originalWarn(...args);
