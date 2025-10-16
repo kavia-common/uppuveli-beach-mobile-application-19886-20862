@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import AuthContext, { AuthProvider } from './context/AuthContext';
 
 /**
  * PUBLIC_INTERFACE
@@ -26,10 +26,7 @@ export function customRender(
 ) {
   const Providers = ({ children }) => {
     if (authValue) {
-      // Prefer to use the actual AuthContext to inject a mocked value
-      // so components relying on useAuth() get the provided state.
-      // eslint-disable-next-line global-require, import/no-dynamic-require
-      const { AuthContext } = require('./context/AuthContext');
+      // When a custom authValue is provided, inject it via AuthContext.Provider
       return (
         <AuthContext.Provider value={authValue}>
           <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
@@ -37,6 +34,7 @@ export function customRender(
       );
     }
 
+    // Default to using the real AuthProvider when no override is provided
     return (
       <AuthProvider>
         <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
