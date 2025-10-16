@@ -39,7 +39,7 @@ describe('ProtectedRoute (with custom test-utils)', () => {
 
   test('renders children when authenticated', async () => {
     const authed = {
-      user: { id: 'u1' },
+      user: { id: 'u1', roles: ['admin'] },
       accessToken: 'token',
       isAuthenticated: true,
       isLoading: false,
@@ -50,6 +50,7 @@ describe('ProtectedRoute (with custom test-utils)', () => {
 
     render(
       <Routes>
+        <Route path="/login" element={<LoginPage />} />
         <Route
           path="/dashboard"
           element={

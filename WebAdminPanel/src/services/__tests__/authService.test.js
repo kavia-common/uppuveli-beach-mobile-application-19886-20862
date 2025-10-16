@@ -60,10 +60,11 @@ describe('authService', () => {
     const state = 'state-xyz';
     sessionStorage.setItem('oauth_state', state);
 
+    // Stub token exchange to resolve with a realistic payload
     const mockResp = {
       data: {
-        access_token: 'token-1',
-        refresh_token: 'refresh-1',
+        access_token: 'test-token',
+        refresh_token: 'test-refresh',
         id_token: 'id-1',
         user: { id: 'u1', name: 'Tester' },
         expires_in: 3600,
@@ -84,14 +85,14 @@ describe('authService', () => {
       { headers: { 'Content-Type': 'application/json' } }
     );
 
-    expect(localStorage.getItem('access_token')).toBe('token-1');
-    expect(localStorage.getItem('refresh_token')).toBe('refresh-1');
+    expect(localStorage.getItem('access_token')).toBe('test-token');
+    expect(localStorage.getItem('refresh_token')).toBe('test-refresh');
     expect(JSON.parse(localStorage.getItem('user'))).toEqual({ id: 'u1', name: 'Tester' });
     const expiry = parseInt(localStorage.getItem('token_expiry'), 10);
     expect(Number.isFinite(expiry)).toBe(true);
     expect(data).toEqual({
-      accessToken: 'token-1',
-      refreshToken: 'refresh-1',
+      accessToken: 'test-token',
+      refreshToken: 'test-refresh',
       idToken: 'id-1',
       user: { id: 'u1', name: 'Tester' },
       expiresIn: 3600,
@@ -109,6 +110,8 @@ describe('authService', () => {
     const code = 'abc123';
     const state = 'state-xyz';
     sessionStorage.setItem('oauth_state', state);
+
+    // Explicitly reject the token exchange call
     axios.post.mockRejectedValueOnce(new Error('network'));
 
     await expect(authService.handleAuthCallback(code, state)).rejects.toThrow(

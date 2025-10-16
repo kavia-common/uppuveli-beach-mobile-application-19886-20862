@@ -24,32 +24,17 @@ export function customRender(
     renderOptions = {}
   } = {}
 ) {
-  // If authValue provided, we want to inject it into AuthProvider.
-  // Our AuthProvider likely manages its own state; to override in tests,
-  // we'll use a simple wrapper that uses a custom value when provided.
   const Providers = ({ children }) => {
     if (authValue) {
-      // We will import and use a mock provider if available; otherwise,
-      // AuthProvider can accept an initialValue prop if supported.
-      // Many projects provide a test mock in context/__mocks__/AuthContextMock.js
-      // which returns an AuthContext.Provider with the provided value.
-      // We'll attempt to require it dynamically to avoid breaking if not present.
-      try {
-        // eslint-disable-next-line global-require, import/no-dynamic-require
-        const { AuthContext } = require('./context/AuthContext');
-        return (
-          <AuthContext.Provider value={authValue}>
-            <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
-          </AuthContext.Provider>
-        );
-      } catch (e) {
-        // Fallback to normal AuthProvider without override if dynamic import fails.
-        return (
-          <AuthProvider>
-            <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
-          </AuthProvider>
-        );
-      }
+      // Prefer to use the actual AuthContext to inject a mocked value
+      // so components relying on useAuth() get the provided state.
+      // eslint-disable-next-line global-require, import/no-dynamic-require
+      const { AuthContext } = require('./context/AuthContext');
+      return (
+        <AuthContext.Provider value={authValue}>
+          <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+        </AuthContext.Provider>
+      );
     }
 
     return (
