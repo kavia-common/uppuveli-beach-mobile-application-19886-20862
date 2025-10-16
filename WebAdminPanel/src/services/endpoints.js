@@ -14,7 +14,7 @@ export const BASE_PATHS = Object.freeze({
 });
 
 // PUBLIC_INTERFACE
-export const endpoints = {
+const endpoints = {
   bookings: {
     list: () => BASE_PATHS.bookings,
     create: () => BASE_PATHS.bookings,
