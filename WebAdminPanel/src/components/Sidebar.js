@@ -43,11 +43,12 @@ const Sidebar = () => {
             <NavLink
               key={item.path}
               to={item.path}
-              className={({ isActive }) => 
+              className={({ isActive }) =>
                 `sidebar-link ${isActive ? 'active' : ''}`
               }
+              aria-current={({ isActive }) => (isActive ? 'page' : undefined)}
             >
-              <Icon className="sidebar-icon" />
+              <Icon className="sidebar-icon" aria-hidden="true" focusable="false" />
               <span className="sidebar-label">{item.label}</span>
             </NavLink>
           );

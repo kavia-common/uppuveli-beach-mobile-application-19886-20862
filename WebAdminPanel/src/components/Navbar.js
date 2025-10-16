@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FiLogOut, FiUser } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 
@@ -16,7 +17,21 @@ import { useAuth } from '../context/AuthContext';
  * @returns {JSX.Element} Navbar component
  */
 const Navbar = ({ onLogout }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    try {
+      if (onLogout) {
+        onLogout();
+      } else {
+        logout();
+        navigate('/login', { replace: true });
+      }
+    } catch {
+      // no-op
+    }
+  };
 
   // Extract user display name from user object
   const getUserDisplayName = () => {
@@ -26,20 +41,26 @@ const Navbar = ({ onLogout }) => {
 
   return (
     <header className="admin-header">
+      <a href="#main-content" className="skip-to-content">Skip to main content</a>
       <div className="admin-header-content">
-        <div className="logo-section">
+        <div className="logo-section" aria-label="Application title">
           <h1 className="admin-title">Uppuveli Beach Admin</h1>
           <span className="admin-subtitle">Hotel Management Portal</span>
         </div>
-        
+
         <div className="navbar-right">
-          <div className="user-info">
-            <FiUser className="user-icon" />
+          <div className="user-info" aria-live="polite">
+            <FiUser className="user-icon" aria-hidden="true" />
             <span className="user-name">{getUserDisplayName()}</span>
           </div>
-          
-          <button onClick={onLogout} className="logout-btn" title="Logout">
-            <FiLogOut className="logout-icon" />
+
+          <button
+            onClick={handleLogout}
+            className="logout-btn"
+            title="Logout"
+            aria-label="Logout"
+          >
+            <FiLogOut className="logout-icon" aria-hidden="true" />
             <span>Logout</span>
           </button>
         </div>

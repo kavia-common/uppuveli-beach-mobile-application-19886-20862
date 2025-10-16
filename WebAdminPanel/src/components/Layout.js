@@ -35,7 +35,7 @@ const Layout = ({ children }) => {
       <div className="layout-main">
         <Sidebar />
         
-        <main className="layout-content">
+        <main id="main-content" className="layout-content" tabIndex="-1">
           {children}
         </main>
       </div>

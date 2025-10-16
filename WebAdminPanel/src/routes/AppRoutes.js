@@ -32,10 +32,21 @@ import Layout from '../components/Layout';
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Public routes - no authentication required */}
-      <Route path="/" element={<HomePage />} />
+      {/* Public routes - only login and callback */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/callback" element={<CallbackPage />} />
+
+      {/* Root should land on dashboard if authenticated */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Navigate to="/dashboard" replace />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
       {/* Protected routes - require authentication and wrap with Layout */}
       <Route
@@ -48,7 +59,8 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
+
+      {/* Bookings */}
       <Route
         path="/bookings"
         element={
@@ -59,7 +71,16 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
+      <Route
+        path="/bookings/new"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <BookingDetailPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/bookings/:id"
         element={
@@ -70,7 +91,8 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
+
+      {/* Loyalty */}
       <Route
         path="/loyalty"
         element={
@@ -81,7 +103,16 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
+      <Route
+        path="/loyalty/new"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <LoyaltyDetailPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/loyalty/:id"
         element={
@@ -92,7 +123,8 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
+
+      {/* Other feature routes */}
       <Route
         path="/payments"
         element={
@@ -103,7 +135,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
       <Route
         path="/notifications"
         element={
@@ -114,7 +145,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
       <Route
         path="/chat"
         element={
@@ -125,7 +155,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
       <Route
         path="/boutique"
         element={
@@ -136,7 +165,16 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
+      <Route
+        path="/boutique/new"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <BoutiqueDetailPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/boutique/:id"
         element={
@@ -147,7 +185,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
       <Route
         path="/analytics"
         element={
@@ -159,7 +196,7 @@ const AppRoutes = () => {
         }
       />
 
-      {/* Catch-all route - redirect to home */}
+      {/* Catch-all - redirect to login if unauthenticated will be handled by ProtectedRoute on '/' */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
