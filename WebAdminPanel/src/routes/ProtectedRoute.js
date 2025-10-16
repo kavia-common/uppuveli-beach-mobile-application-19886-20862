@@ -7,6 +7,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 // PUBLIC_INTERFACE
 /**
@@ -23,18 +24,7 @@ const ProtectedRoute = ({ children }) => {
 
   // Show loading state while checking authentication
   if (isLoading) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        fontSize: '1.2rem',
-        color: '#64748b'
-      }}>
-        Loading...
-      </div>
-    );
+    return <LoadingSpinner message="Checking authentication..." fullScreen={true} />;
   }
 
   // Check if user is authenticated and has an access token
