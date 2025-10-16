@@ -1,50 +1,52 @@
-/**
- * Configuration module for Web Admin Panel
- * Exports environment variables with sensible defaults for development
+/* PUBLIC_INTERFACE */
+/** Exports application configuration sourced from REACT_APP_* environment variables.
+ *  Values are read at build-time by CRA. This module centralizes config access
+ *  and provides sensible defaults for local development.
  */
+const toScopes = (raw) =>
+  String(raw || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
 
 // PUBLIC_INTERFACE
-/**
- * Application configuration object containing API and OAuth2 settings
- * @constant {Object} config
- */
-const config = {
-  /**
-   * Base URL for API requests
-   * @type {string}
-   */
-  apiBaseUrl: process.env.REACT_APP_API_BASE_URL || 'https://api.uppuvelibeach.com/api/v1',
-  
-  /**
-   * OAuth2 authorization endpoint
-   * @type {string}
-   */
-  oauthAuthorizationUrl: process.env.REACT_APP_OAUTH_AUTHORIZATION_URL || 'https://api.uppuvelibeach.com/oauth/authorize',
-  
-  /**
-   * OAuth2 token endpoint
-   * @type {string}
-   */
-  oauthTokenUrl: process.env.REACT_APP_OAUTH_TOKEN_URL || 'https://api.uppuvelibeach.com/oauth/token',
-  
-  /**
-   * OAuth2 client ID
-   * NOTE: This must be configured via environment variables - request from user
-   * @type {string}
-   */
-  oauthClientId: process.env.REACT_APP_OAUTH_CLIENT_ID || '',
-  
-  /**
-   * OAuth2 redirect URI after authentication
-   * @type {string}
-   */
-  oauthRedirectUri: process.env.REACT_APP_OAUTH_REDIRECT_URI || 'http://localhost:3000/callback',
-  
-  /**
-   * Site URL for the application
-   * @type {string}
-   */
-  siteUrl: process.env.REACT_APP_SITE_URL || 'http://localhost:3000'
-};
+const cfg = Object.freeze({
+  /** Application display name */
+  appName: process.env.REACT_APP_APP_NAME || 'Uppuveli Admin',
 
-export default config;
+  /** Backend API base URL */
+  apiBaseUrl:
+    process.env.REACT_APP_API_BASE_URL ||
+    'https://api.uppuvelibeach.com/api/v1',
+
+  /** OAuth2 endpoints and parameters */
+  oauth: Object.freeze({
+    /** Authorization endpoint for OAuth2 Authorization Code flow */
+    authorizationUrl:
+      process.env.REACT_APP_OAUTH_AUTH_URL ||
+      'https://api.uppuvelibeach.com/oauth/authorize',
+
+    /** Token endpoint for OAuth2 Authorization Code flow */
+    tokenUrl:
+      process.env.REACT_APP_OAUTH_TOKEN_URL ||
+      'https://api.uppuvelibeach.com/oauth/token',
+
+    /** Public client ID registered with the Authorization Server */
+    clientId: process.env.REACT_APP_OAUTH_CLIENT_ID || '',
+
+    /** Redirect URI configured on the Authorization Server */
+    redirectUri:
+      process.env.REACT_APP_OAUTH_REDIRECT_URI ||
+      'http://localhost:3000/callback',
+
+    /** Space/comma separated scopes list; default is 'admin' */
+    scopes: toScopes(process.env.REACT_APP_OAUTH_SCOPES || 'admin'),
+
+    /** Post-logout redirect URI */
+    logoutRedirect:
+      process.env.REACT_APP_OAUTH_LOGOUT_REDIRECT ||
+      'http://localhost:3000/login',
+  }),
+});
+
+export default cfg;
