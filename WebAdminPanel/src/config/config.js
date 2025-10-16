@@ -47,6 +47,17 @@ const cfg = Object.freeze({
       process.env.REACT_APP_OAUTH_LOGOUT_REDIRECT ||
       'http://localhost:3000/login',
   }),
+
+  // Backward-compatible aliases (minimal coupling with existing code)
+  oauthAuthorizationUrl:
+    process.env.REACT_APP_OAUTH_AUTH_URL ||
+    'https://api.uppuvelibeach.com/oauth/authorize',
+  oauthTokenUrl:
+    process.env.REACT_APP_OAUTH_TOKEN_URL ||
+    'https://api.uppuvelibeach.com/oauth/token',
+  oauthClientId: process.env.REACT_APP_OAUTH_CLIENT_ID || '',
+  oauthRedirectUri:
+    process.env.REACT_APP_OAUTH_REDIRECT_URI || 'http://localhost:3000/callback',
 });
 
 export default cfg;

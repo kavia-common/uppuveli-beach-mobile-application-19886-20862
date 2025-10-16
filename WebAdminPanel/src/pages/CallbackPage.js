@@ -50,8 +50,8 @@ const CallbackPage = () => {
         // Update auth context with new data
         setAuthData(authData);
 
-        // Redirect to dashboard on success
-        navigate('/dashboard', { replace: true });
+        // Redirect to app root (dashboard entry) on success
+        navigate('/', { replace: true });
       } catch (err) {
         console.error('Callback processing error:', err);
         setError(err.message || 'Failed to process authentication callback');

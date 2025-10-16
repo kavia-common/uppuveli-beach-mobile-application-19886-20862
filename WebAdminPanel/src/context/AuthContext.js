@@ -3,13 +3,15 @@
  * Provides global authentication state and methods throughout the application
  */
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   login as authLogin,
   logout as authLogout,
   getUser,
   getAccessToken,
   isAuthenticated as checkAuth,
+  isTokenExpired,
+  refreshToken as doRefreshToken,
 } from '../services/authService';
 
 // Create the authentication context
@@ -46,18 +48,36 @@ export const AuthProvider = ({ children }) => {
   /**
    * Initialize authentication state from localStorage on mount
    */
+  const didInitRef = useRef(false);
+
   useEffect(() => {
-    const initializeAuth = () => {
+    const initializeAuth = async () => {
       try {
-        const authenticated = checkAuth();
+        const token = getAccessToken();
+        let authenticated = !!token && !isTokenExpired();
+
+        // If token exists but is expired/near expiry, attempt a single refresh
+        if (token && isTokenExpired()) {
+          try {
+            const newToken = await doRefreshToken();
+            if (newToken) {
+              authenticated = true;
+            }
+          } catch (e) {
+            authenticated = false;
+          }
+        }
+
         setIsAuthenticated(authenticated);
-        
+
         if (authenticated) {
           const storedUser = getUser();
-          const token = getAccessToken();
-          
+          const activeToken = getAccessToken();
           setUser(storedUser);
-          setAccessToken(token);
+          setAccessToken(activeToken);
+        } else {
+          setUser(null);
+          setAccessToken(null);
         }
       } catch (error) {
         console.error('Error initializing auth state:', error);
@@ -69,7 +89,10 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    initializeAuth();
+    if (!didInitRef.current) {
+      didInitRef.current = true;
+      void initializeAuth();
+    }
   }, []);
 
   /**

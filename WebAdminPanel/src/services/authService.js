@@ -4,7 +4,7 @@
  */
 
 import axios from 'axios';
-import config from '../config/config';
+import cfg from '../config/config';
 
 const TOKEN_KEY = 'access_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
@@ -15,19 +15,21 @@ const TOKEN_EXPIRY_KEY = 'token_expiry';
 /**
  * Initiates OAuth2 login by redirecting to authorization URL
  * Constructs authorization URL with required parameters and redirects user
+ * Note: PKCE can be added in future; placeholder intentionally omitted per instruction.
  */
 export function login() {
-  const authUrl = new URL(config.oauthAuthorizationUrl);
+  const authUrl = new URL(cfg.oauth.authorizationUrl);
   authUrl.searchParams.append('response_type', 'code');
-  authUrl.searchParams.append('client_id', config.oauthClientId);
-  authUrl.searchParams.append('redirect_uri', config.oauthRedirectUri);
-  authUrl.searchParams.append('scope', 'admin');
-  
+  authUrl.searchParams.append('client_id', cfg.oauth.clientId);
+  authUrl.searchParams.append('redirect_uri', cfg.oauth.redirectUri);
+  const scopeValue = cfg.oauth.scopes && cfg.oauth.scopes.length ? cfg.oauth.scopes.join(' ') : 'admin';
+  authUrl.searchParams.append('scope', scopeValue);
+
   // Generate and store state for CSRF protection
   const state = generateRandomState();
   sessionStorage.setItem('oauth_state', state);
   authUrl.searchParams.append('state', state);
-  
+
   // Redirect to authorization server
   window.location.href = authUrl.toString();
 }
@@ -48,43 +50,48 @@ export async function handleAuthCallback(code, state) {
     throw new Error('Invalid state parameter - possible CSRF attack');
   }
   sessionStorage.removeItem('oauth_state');
-  
+
   try {
     // Exchange authorization code for tokens
-    const response = await axios.post(config.oauthTokenUrl, {
-      grant_type: 'authorization_code',
-      code: code,
-      redirect_uri: config.oauthRedirectUri,
-      client_id: config.oauthClientId,
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await axios.post(
+      cfg.oauth.tokenUrl,
+      {
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: cfg.oauth.redirectUri,
+        client_id: cfg.oauth.clientId,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
       }
-    });
-    
-    const { access_token, refresh_token, expires_in, user } = response.data;
-    
+    );
+
+    const { access_token, refresh_token, expires_in, user, id_token } = response.data;
+
     // Store tokens and user data
     localStorage.setItem(TOKEN_KEY, access_token);
     if (refresh_token) {
       localStorage.setItem(REFRESH_TOKEN_KEY, refresh_token);
     }
-    
+
     // Calculate and store token expiry time
     if (expires_in) {
-      const expiryTime = Date.now() + (expires_in * 1000);
+      const expiryTime = Date.now() + expires_in * 1000;
       localStorage.setItem(TOKEN_EXPIRY_KEY, expiryTime.toString());
     }
-    
+
     if (user) {
       localStorage.setItem(USER_KEY, JSON.stringify(user));
     }
-    
+
     return {
       accessToken: access_token,
-      refreshToken: refresh_token,
+      refreshToken: refresh_token || null,
+      idToken: id_token || null,
       user: user || null,
-      expiresIn: expires_in
+      expiresIn: expires_in || null,
     };
   } catch (error) {
     console.error('Token exchange failed:', error);
@@ -134,10 +141,10 @@ export function getUser() {
 export function isTokenExpired() {
   const expiryStr = localStorage.getItem(TOKEN_EXPIRY_KEY);
   if (!expiryStr) return true;
-  
+
   const expiry = parseInt(expiryStr, 10);
   // Consider token expired if it expires in less than 60 seconds
-  return Date.now() >= (expiry - 60000);
+  return Number.isFinite(expiry) ? Date.now() >= expiry - 60000 : true;
 }
 
 // PUBLIC_INTERFACE
@@ -148,36 +155,40 @@ export function isTokenExpired() {
  */
 export async function refreshToken() {
   const refreshTokenValue = getRefreshToken();
-  
+
   if (!refreshTokenValue) {
     throw new Error('No refresh token available');
   }
-  
+
   try {
-    const response = await axios.post(config.oauthTokenUrl, {
-      grant_type: 'refresh_token',
-      refresh_token: refreshTokenValue,
-      client_id: config.oauthClientId,
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await axios.post(
+      cfg.oauth.tokenUrl,
+      {
+        grant_type: 'refresh_token',
+        refresh_token: refreshTokenValue,
+        client_id: cfg.oauth.clientId,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
       }
-    });
-    
+    );
+
     const { access_token, refresh_token, expires_in } = response.data;
-    
+
     // Update stored tokens
     localStorage.setItem(TOKEN_KEY, access_token);
     if (refresh_token) {
       localStorage.setItem(REFRESH_TOKEN_KEY, refresh_token);
     }
-    
+
     // Update token expiry
     if (expires_in) {
-      const expiryTime = Date.now() + (expires_in * 1000);
+      const expiryTime = Date.now() + expires_in * 1000;
       localStorage.setItem(TOKEN_EXPIRY_KEY, expiryTime.toString());
     }
-    
+
     return access_token;
   } catch (error) {
     console.error('Token refresh failed:', error);
@@ -217,5 +228,5 @@ export function isAuthenticated() {
 function generateRandomState() {
   const array = new Uint8Array(32);
   window.crypto.getRandomValues(array);
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }

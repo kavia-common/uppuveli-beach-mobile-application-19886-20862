@@ -4,7 +4,7 @@
  */
 
 import axios from 'axios';
-import config from '../config/config';
+import cfg from '../config/config';
 import { getAccessToken, refreshToken, logout, isTokenExpired } from './authService';
 
 // PUBLIC_INTERFACE
@@ -13,7 +13,7 @@ import { getAccessToken, refreshToken, logout, isTokenExpired } from './authServ
  * Automatically attaches Bearer token and handles 401 responses with token refresh
  */
 const apiClient = axios.create({
-  baseURL: config.apiBaseUrl,
+  baseURL: cfg.apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },

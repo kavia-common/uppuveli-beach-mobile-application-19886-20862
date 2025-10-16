@@ -3,7 +3,7 @@
  * Handles user authentication via OAuth2
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -17,6 +17,7 @@ const LoginPage = () => {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -27,6 +28,7 @@ const LoginPage = () => {
   }, [isAuthenticated, navigate, location]);
 
   const handleLogin = () => {
+    setIsRedirecting(true);
     login();
   };
 
@@ -51,9 +53,18 @@ const LoginPage = () => {
           </div>
 
           <div className="action-section">
-            <button onClick={handleLogin} className="btn btn-primary">
-              Sign In with OAuth2
+            <button
+              onClick={handleLogin}
+              className="btn btn-primary"
+              aria-busy={isRedirecting}
+              aria-disabled={isRedirecting}
+              disabled={isRedirecting}
+            >
+              {isRedirecting ? 'Redirecting to provider…' : 'Sign In with OAuth2'}
             </button>
+            <p className="welcome-description" role="note">
+              If nothing happens, please ensure pop-up blockers are disabled and try again.
+            </p>
           </div>
         </div>
       </main>
