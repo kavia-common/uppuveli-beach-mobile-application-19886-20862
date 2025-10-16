@@ -55,22 +55,21 @@ describe('authService', () => {
     window.crypto = prevCrypto;
   });
 
-  test('handleAuthCallback parses code/state, validates state and stores tokens, user, expiry', async () => {
+  test('handleAuthCallback parses code/state, validates state and stores tokens, user, expiry (success path)', async () => {
     const code = 'abc123';
     const state = 'state-xyz';
     sessionStorage.setItem('oauth_state', state);
 
-    // Stub token exchange to resolve with a realistic payload
-    const mockResp = {
+    // Explicitly mock the token exchange to succeed with deterministic payload
+    axios.post.mockResolvedValueOnce({
       data: {
-        access_token: 'test-token',
-        refresh_token: 'test-refresh',
-        id_token: 'id-1',
+        access_token: 'mock_token',
+        refresh_token: 'mock_refresh',
+        id_token: 'mock_id',
         user: { id: 'u1', name: 'Tester' },
         expires_in: 3600,
       },
-    };
-    axios.post.mockResolvedValueOnce(mockResp);
+    });
 
     const data = await authService.handleAuthCallback(code, state);
 
@@ -85,15 +84,15 @@ describe('authService', () => {
       { headers: { 'Content-Type': 'application/json' } }
     );
 
-    expect(localStorage.getItem('access_token')).toBe('test-token');
-    expect(localStorage.getItem('refresh_token')).toBe('test-refresh');
+    expect(localStorage.getItem('access_token')).toBe('mock_token');
+    expect(localStorage.getItem('refresh_token')).toBe('mock_refresh');
     expect(JSON.parse(localStorage.getItem('user'))).toEqual({ id: 'u1', name: 'Tester' });
     const expiry = parseInt(localStorage.getItem('token_expiry'), 10);
     expect(Number.isFinite(expiry)).toBe(true);
     expect(data).toEqual({
-      accessToken: 'test-token',
-      refreshToken: 'test-refresh',
-      idToken: 'id-1',
+      accessToken: 'mock_token',
+      refreshToken: 'mock_refresh',
+      idToken: 'mock_id',
       user: { id: 'u1', name: 'Tester' },
       expiresIn: 3600,
     });
@@ -106,12 +105,12 @@ describe('authService', () => {
     expect(sessionStorage.getItem('oauth_state')).toBeNull();
   });
 
-  test('handleAuthCallback surfaces friendly error when token exchange fails', async () => {
+  test('handleAuthCallback surfaces friendly error when token exchange fails (error path)', async () => {
     const code = 'abc123';
     const state = 'state-xyz';
     sessionStorage.setItem('oauth_state', state);
 
-    // Explicitly reject the token exchange call
+    // Explicitly reject the token exchange call to simulate network/error path
     axios.post.mockRejectedValueOnce(new Error('network'));
 
     await expect(authService.handleAuthCallback(code, state)).rejects.toThrow(
